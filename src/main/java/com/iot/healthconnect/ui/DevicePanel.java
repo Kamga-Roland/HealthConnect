@@ -1,9 +1,12 @@
 package com.iot.healthconnect.ui;
 
+import com.iot.healthconnect.entity.DeviceSettings;
 import com.iot.healthconnect.model.Glucometre;
 import com.iot.healthconnect.model.IoTDevice;
 import com.iot.healthconnect.model.Oxymetre;
 import com.iot.healthconnect.model.Tensiometre;
+import com.iot.healthconnect.service.DataSimulator;
+import com.iot.healthconnect.service.SettingsService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +17,17 @@ public class DevicePanel extends JPanel {
     private final AlarmLabel alarmLabel;
     private final LiveChartPanel chartPanel;
 
-    public DevicePanel(IoTDevice device) {
+    private final IoTDevice device;
+    private final SettingsService settingsService;
+    private final DeviceSettings settings;
+
+    private DataSimulator simulator;
+
+    public DevicePanel(IoTDevice device, SettingsService settingsService) {
+
+        this.device = device;
+        this.settingsService = settingsService;
+        this.settings = settingsService.loadSettings(device);
 
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -24,6 +37,10 @@ public class DevicePanel extends JPanel {
 
         JPanel header = new JPanel(new BorderLayout());
         header.add(title, BorderLayout.WEST);
+
+        JButton configBtn = new JButton("Configurer");
+        configBtn.addActionListener(e -> new DeviceConfigDialog(this.device, this.settingsService).setVisible(true));
+        header.add(configBtn, BorderLayout.EAST);
 
         add(header, BorderLayout.NORTH);
 
@@ -39,44 +56,48 @@ public class DevicePanel extends JPanel {
 
         add(infoPanel, BorderLayout.WEST);
 
-        // Graphique dynamique
         chartPanel = new LiveChartPanel("Évolution", "Valeur");
         add(chartPanel, BorderLayout.CENTER);
     }
 
-    // Mise à jour automatique
+    public void setSimulator(DataSimulator simulator) {
+        this.simulator = simulator;
+    }
+
+    public void stopSimulation() {
+        if (simulator != null) {
+            simulator.stop();
+            simulator = null;
+        }
+    }
+
     public void updateDevice(IoTDevice device) {
+
+        // Recharger les settings depuis la BD
+        DeviceSettings fresh = settingsService.loadSettings(device);
+
+        double min = fresh.getMinValue() != null ? fresh.getMinValue() : Double.MIN_VALUE;
+        double max = fresh.getMaxValue() != null ? fresh.getMaxValue() : Double.MAX_VALUE;
 
         statusLabel.setText("Statut : " + device.getStatus());
 
         if (device instanceof Tensiometre t) {
             chartPanel.addValue(t.getSystolic());
-
-            if (t.getSystolic() > 150 || t.getDiastolic() > 95) {
-                alarmLabel.setAlarm(true, "Alarme : Tension élevée !");
-            } else {
-                alarmLabel.setAlarm(false, "");
-            }
+            boolean alarm = t.getSystolic() < min || t.getSystolic() > max;
+            alarmLabel.setAlarm(alarm, alarm ? "Alarme : tension hors seuil !" : "");
         }
+
         if (device instanceof Oxymetre o) {
             chartPanel.addValue(o.getSpo2());
-
-            if (o.getSpo2() < 92) {
-                alarmLabel.setAlarm(true, "Alarme : hypoxie !");
-            } else  {
-                alarmLabel.setAlarm(false, "");
-            }
+            boolean alarm = o.getSpo2() < min || o.getSpo2() > max;
+            alarmLabel.setAlarm(alarm, alarm ? "Alarme : SpO₂ hors seuil !" : "");
         }
+
         if (device instanceof Glucometre g) {
             chartPanel.addValue(g.getGlucose());
-
-            if (g.getGlucose() > 180) {
-                alarmLabel.setAlarm(true, "Alarme : Hyperglycémie !");
-            } else if (g.getGlucose() < 60) {
-                alarmLabel.setAlarm(true, "Alarme : Hypoglycémie !");
-            } else {
-                alarmLabel.setAlarm(false, "");
-            }
+            boolean alarm = g.getGlucose() < min || g.getGlucose() > max;
+            alarmLabel.setAlarm(alarm, alarm ? "Alarme : glycémie hors seuil !" : "");
         }
     }
+
 }

@@ -1,15 +1,14 @@
 package com.iot.healthconnect;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.iot.healthconnect.model.Glucometre;
-import com.iot.healthconnect.model.Oxymetre;
-import com.iot.healthconnect.model.Tensiometre;
-import com.iot.healthconnect.service.GlucometreSimulator;
-import com.iot.healthconnect.service.OxymetreSimulator;
-import com.iot.healthconnect.service.TensiometreSimulator;
+import com.iot.healthconnect.repository.DeviceRepository;
+import com.iot.healthconnect.service.SettingsService;
 import com.iot.healthconnect.ui.MainWindow;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 import javax.swing.*;
 
@@ -17,39 +16,23 @@ import javax.swing.*;
 public class HealthconnectApplication {
 
     public static void main(String[] args) {
-
-        // Empêche les erreurs Headless
         System.setProperty("java.awt.headless", "false");
-
         SpringApplication.run(HealthconnectApplication.class, args);
+    }
 
-        // UI moderne
-        FlatLightLaf.setup();
+    @Bean
+    public CommandLineRunner startUi(ApplicationContext ctx) {
+        return args -> {
 
-        // Lance l’interface Swing
-        SwingUtilities.invokeLater(() -> {
+            FlatLightLaf.setup();
 
-            MainWindow window = new MainWindow();
+            SettingsService settingsService = ctx.getBean(SettingsService.class);
+            DeviceRepository deviceRepository = ctx.getBean(DeviceRepository.class);
 
-            // Création des appareilles
-            Tensiometre t1 = new Tensiometre("Tensiomètre #1", true);
-            Glucometre g1 = new Glucometre("Glucomètre #1", true);
-            Oxymetre o1 = new Oxymetre("Oxymetre #1", true);
-            window.addDevice(t1);
-            window.addDevice(o1);
-            window.addDevice(g1);
-
-
-            // Simulation des données
-            TensiometreSimulator simT = new TensiometreSimulator(t1);
-            GlucometreSimulator simG = new GlucometreSimulator(g1);
-            OxymetreSimulator simO = new OxymetreSimulator(o1);
-            simT.start();
-            simO.start();
-            simG.start();
-
-            // Affiche la fenêtre
-            window.setVisible(true);
-        });
+            SwingUtilities.invokeLater(() -> {
+                MainWindow window = new MainWindow(settingsService, deviceRepository);
+                window.setVisible(true);
+            });
+        };
     }
 }

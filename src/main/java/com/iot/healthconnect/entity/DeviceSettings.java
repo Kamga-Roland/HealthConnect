@@ -5,25 +5,24 @@ import lombok.Data;
 
 @Data
 @Entity
+@Table(name = "device_settings")
 public class DeviceSettings {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String deviceName;
+
     private String deviceType;
 
-    // Alarm thresholds
     private Double minValue;
     private Double maxValue;
 
-    // Simulation speed (ms)
     private Integer simulationInterval;
 
-    // UI theme
     private String colorTheme;
 
-    // Icon name
     private String iconName;
 }

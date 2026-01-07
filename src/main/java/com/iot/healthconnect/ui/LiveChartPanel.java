@@ -12,14 +12,13 @@ import java.awt.*;
 
 public class LiveChartPanel extends JPanel {
 
-    private TimeSeries series;
+    private final TimeSeries series;
 
     public LiveChartPanel(String title, String yLabel) {
 
         setLayout(new BorderLayout());
 
         series = new TimeSeries("Valeur");
-
         TimeSeriesCollection dataset = new TimeSeriesCollection(series);
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
@@ -36,7 +35,6 @@ public class LiveChartPanel extends JPanel {
         add(chartPanel, BorderLayout.CENTER);
     }
 
-    // Méthode appelée à chaque nouvelle valeur
     public void addValue(double value) {
         series.addOrUpdate(new Millisecond(), value);
     }
