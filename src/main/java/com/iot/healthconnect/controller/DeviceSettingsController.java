@@ -1,4 +1,4 @@
-package com.iot.healthconnect.api;
+package com.iot.healthconnect.controller;
 
 import com.iot.healthconnect.entity.DeviceSettings;
 import com.iot.healthconnect.service.SettingsService;

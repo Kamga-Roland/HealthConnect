@@ -4,6 +4,7 @@ import com.iot.healthconnect.entity.DeviceSettings;
 import com.iot.healthconnect.model.IoTDevice;
 import com.iot.healthconnect.repository.DeviceSettingsRepository;
 import org.springframework.stereotype.Service;
+
 @Service
 public class SettingsService {
 

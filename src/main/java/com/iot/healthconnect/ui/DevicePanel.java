@@ -44,7 +44,7 @@ public class DevicePanel extends JPanel {
 
         add(header, BorderLayout.NORTH);
 
-        JPanel infoPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        JPanel infoPanel = new    JPanel(new GridLayout(0, 1, 5, 5));
 
         statusLabel = new JLabel("Statut : " + device.getStatus());
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
