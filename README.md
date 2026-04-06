@@ -1,2 +1,2 @@
-This project is built by Roland Kamga.
+Built by Roland Kamga.
 
